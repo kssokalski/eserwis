@@ -17,8 +17,9 @@ data class LoginState(
     val loginSuccess: Boolean = false
 )
 
-class LoginViewModel : ViewModel() {
-
+class LoginViewModel(
+    private val authService: AuthService = AuthService()
+) : ViewModel() {
     private val _state = mutableStateOf(LoginState())
     val state: State<LoginState> = _state
 
@@ -38,16 +39,19 @@ class LoginViewModel : ViewModel() {
 
         _state.value = _state.value.copy(isLoading = true)
 
-        //symulacja logowania TODO Firebase/REST
         viewModelScope.launch {
-            delay(5000) //symulacja opoznienia
-
-            if(_state.value.username == "test" && _state.value.password == "test"){
-                _state.value = _state.value.copy(isLoading = false, loginSuccess = true)
-            } else {
-                _state.value = _state.value.copy(isLoading = false, loginError = "Niepoprawny login lub hasło")
+            val result = authService.login(_state.value.username, _state.value.password)
+            when (result) {
+                is AuthService.AuthResult.Success -> {
+                    _state.value = _state.value.copy(isLoading = false, loginSuccess = true)
+                }
+                is AuthService.AuthResult.Error -> {
+                    _state.value = _state.value.copy(isLoading = false, loginError = result.message)
+                }
             }
         }
+
+
     }
     //funkcja resetujaca stan
     fun reset(){

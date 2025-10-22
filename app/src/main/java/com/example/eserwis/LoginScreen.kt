@@ -1,6 +1,7 @@
 package com.example.eserwis
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,8 +33,11 @@ fun LoginScreen(
             .padding(paddingValues)
             .padding(24.dp),
          horizontalAlignment = Alignment.CenterHorizontally,
-         verticalArrangement = Arrangement.Center
+         verticalArrangement = Arrangement.Top
       ) {
+
+         Spacer(modifier = Modifier.height(64.dp))
+
          Text(
             text = "E-Serwis",
             style = MaterialTheme.typography.headlineLarge,
