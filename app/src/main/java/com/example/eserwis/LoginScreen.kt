@@ -15,14 +15,16 @@ import com.example.eserwis.ui.theme.EserwisTheme
 
 @Composable
 fun LoginScreen(
-   onLoginSuccess: (String) -> Unit,
+   onLoginSuccess: (AuthenticatedUser) -> Unit,
    viewModel: LoginViewModel = viewModel()
 ) {
    val state = viewModel.state.value
 
    LaunchedEffect(key1 = state.loginSuccess) {
       if (state.loginSuccess) {
-         onLoginSuccess(state.username)
+         state.authenticatedUser?.let { user ->
+            onLoginSuccess(user) //przekazanie danych uzytkownika
+         }
       }
    }
 

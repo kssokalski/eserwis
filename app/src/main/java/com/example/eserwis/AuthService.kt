@@ -12,7 +12,11 @@ class AuthService {
 
     //rezultat logowania
     sealed class AuthResult {
-        data class Success(val userId: String, val role: String) : AuthResult()
+        data class Success(
+            val uid: String,
+            val role: String,
+            val department: String
+        ) : AuthResult()
         data class Error(val message: String) : AuthResult()
     }
 
@@ -23,7 +27,8 @@ class AuthService {
             //pobranie danych z Firestore
             val userDoc = _db.collection("users").document(uid).get().await()
             val role = userDoc.getString("role") ?: return AuthResult.Error("Brak roli użytkownika")
-            AuthResult.Success(uid, role)
+            val department = userDoc.getString("department") ?: return AuthResult.Error("Brak działu użytkownika")
+            AuthResult.Success(uid, role, department)
         } catch (e: Exception) {
             AuthResult.Error(e.message ?: "Błąd logowania")
         }

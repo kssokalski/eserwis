@@ -14,7 +14,14 @@ data class LoginState(
     val password: String = "",
     val isLoading: Boolean = false,
     val loginError: String? = null,
-    val loginSuccess: Boolean = false
+    val loginSuccess: Boolean = false,
+    val authenticatedUser: AuthenticatedUser? = null
+)
+
+data class AuthenticatedUser(
+    val uid : String,
+    val role: String,
+    val department: String
 )
 
 class LoginViewModel(
@@ -43,7 +50,18 @@ class LoginViewModel(
             val result = authService.login(_state.value.username, _state.value.password)
             when (result) {
                 is AuthService.AuthResult.Success -> {
-                    _state.value = _state.value.copy(isLoading = false, loginSuccess = true)
+                    val authUser = AuthenticatedUser(
+                        uid = result.uid,
+                        role = result.role,
+                        department = result.department
+                    )
+                    //zapisanie uzytkownika w stanie ViewModel
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        loginSuccess = true,
+                        authenticatedUser = authUser
+                    )
+
                 }
                 is AuthService.AuthResult.Error -> {
                     _state.value = _state.value.copy(isLoading = false, loginError = result.message)
