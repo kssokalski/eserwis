@@ -1,6 +1,5 @@
 package com.example.eserwis
 
-import android.R.attr.thickness
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,10 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -25,6 +22,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,12 +40,16 @@ import com.example.eserwis.ui.theme.EserwisTheme
 fun MainDashboardScreen(
     userRole : String,
     currentUserUID: String,
-    department: String?,
+    department: String,
     onLogout: () -> Unit,
     viewModel: MainDashboardViewModel = viewModel()
 ) {
 
-    val faults = viewModel.allFaults.value
+    LaunchedEffect(key1 = currentUserUID, key2 = userRole) {
+        viewModel.loadFaults(currentUserUID, userRole, department)
+    }
+
+    val allFaults by viewModel.faults.collectAsState()
 
     Scaffold(
         topBar = {
@@ -84,12 +90,7 @@ fun MainDashboardScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(
-                    items = filterFaults(
-                        allFaults = viewModel.allFaults.value,
-                        role = userRole,
-                        currentUserUID = currentUserUID,
-                        department = department
-                    )
+                    items = allFaults
                 ) { fault ->
                     FaultListItem(fault, userRole, currentUserUID)
                     HorizontalDivider(modifier = Modifier.fillMaxWidth(), thickness = 1.dp)
@@ -107,8 +108,19 @@ fun MainDashboardScreen(
 fun FaultListItem(
     fault: Fault,
     userRole: String,
-    currentUserUID: String
+    currentUserUID: String,
+    viewModel: MainDashboardViewModel = viewModel()
 ){
+
+    //pobranie username dla danej usterki
+    val username by remember(fault.assignedToUid) {
+        derivedStateOf {
+            if (fault.assignedToUid != null){
+                viewModel.getUsername(fault.assignedToUid)
+            } else null
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -126,9 +138,9 @@ fun FaultListItem(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Lokalizacja : ${fault.location}", style = MaterialTheme.typography.bodySmall)
                 Text(text = "Status : ${fault.status}", style = MaterialTheme.typography.bodySmall)
-
-                if(fault.assignedTo != null && userRole == UserRoles.MANAGER) {
-                    Text(text = "Przypisane do : ${fault.assignedTo}", style = MaterialTheme.typography.bodySmall)
+                /* TODO: FIX $USERNAME */
+                if(fault.assignedToUid != null && userRole == UserRoles.MANAGER) {
+                    Text(text = "Przypisane do : $username", style = MaterialTheme.typography.bodySmall)
                 }
             }
 
@@ -136,14 +148,15 @@ fun FaultListItem(
                 Button(onClick = { /*TODO: przypisanie do usterki*/ }) {
                     Text(text = "Przypisz")
                 }
-            } else if (fault.assignedTo == currentUserUID) {
+            } else if (fault.assignedToUid == currentUserUID) {
                 Button(onClick = { /*TODO: zmiana statusu usterki*/ }) {
                     Text(text = "Zmień status")
                 }
             } else {
+                val priorityEnum = Priority.fromString(fault.priority)
                 Text(
-                    text = fault.priority.uppercase(),
-                    color = if(fault.priority == "krytyczny") Color.Red else Color.Yellow,
+                    text = priorityEnum.value.uppercase(),
+                    color = priorityEnum.color,
                     style = MaterialTheme.typography.labelSmall
                 )
             }
@@ -155,32 +168,7 @@ fun FaultListItem(
     }
 }
 
-fun filterFaults(
-    allFaults : List<Fault>,
-    role: String,
-    currentUserUID: String,
-    department: String? = null
-): List<Fault> {
 
-    return when (role){
-
-        UserRoles.OPERATOR -> {
-            allFaults.filter { it.status != "zakończone" && it.department == department }
-        }
-
-        UserRoles.MANAGER -> {
-            allFaults.filter { it.department == department && it.status != "zakończone" }
-        }
-
-        UserRoles.TECHNICIAN -> {
-            allFaults.filter { it.assignedTo == currentUserUID && it.status != "zakończone" }
-        }
-
-        else -> emptyList()
-
-    }
-
-}
 
 @Preview(showBackground = true)
 @Composable

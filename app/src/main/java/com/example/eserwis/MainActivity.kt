@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
                     MainDashboardScreen(
                         userRole = currentUser!!.role,
                         currentUserUID = currentUser!!.uid,
-                        department = currentUser!!.department,
+                        department = currentUser!!.department.toString(),
                         onLogout = {
                             currentUser = null
                         }

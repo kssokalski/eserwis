@@ -12,12 +12,8 @@ class AuthService {
 
     //rezultat logowania
     sealed class AuthResult {
-        data class Success(
-            val uid: String,
-            val role: String,
-            val department: String
-        ) : AuthResult()
-        data class Error(val message: String) : AuthResult()
+        data class Success (val user : AuthenticatedUser) : AuthResult()
+        data class Error (val message: String) : AuthResult()
     }
 
     suspend fun login(username: String, password: String): Any {
@@ -28,7 +24,12 @@ class AuthService {
             val userDoc = _db.collection("users").document(uid).get().await()
             val role = userDoc.getString("role") ?: return AuthResult.Error("Brak roli użytkownika")
             val department = userDoc.getString("department") ?: return AuthResult.Error("Brak działu użytkownika")
-            AuthResult.Success(uid, role, department)
+            val authenticatedUser = AuthenticatedUser(
+                uid = uid,
+                role = role,
+                department = department
+            )
+            AuthResult.Success(authenticatedUser)
         } catch (e: Exception) {
             AuthResult.Error(e.message ?: "Błąd logowania")
         }

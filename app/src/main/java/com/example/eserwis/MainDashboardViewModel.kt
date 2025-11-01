@@ -1,36 +1,83 @@
 package com.example.eserwis
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 
 
-data class Fault(
-    val id: String,
-    val title: String,
-    val description: String,
-    val location: String,
-    val department: String,
-    val priority: String, //krytyczna, normalna, pomniejsza
-    val status: String, //zgloszone, w trakcie pracy, zakonczone
-    val assignedTo: String? = null //UID technika
-)
+class MainDashboardViewModel(
+    private val service : FaultService = FaultService()
+) : ViewModel() {
 
-class MainDashboardViewModel : ViewModel() {
+    private val _faults = MutableStateFlow<List<Fault>>(emptyList())
+    val faults: StateFlow<List<Fault>> = _faults.asStateFlow()
+    private val _usernames = MutableStateFlow<Map<String, String>>(emptyMap())
+    fun loadFaults(
+        role: String,
+        currentUserUID: String,
+        department: String?
+    ) {
+        viewModelScope.launch {
+            //val currentUser = FirebaseAuth.getInstance().currentUser
 
-    //symulacja usterek
-    //TODO: pobieranie usterek z firebase
-    private val userUid = "uid_technik_1" // symulowane UID
-    private val managerDepartment = "Hala A" // symulowany wydzial
+            service.getActiveFaults(role, currentUserUID, department).collectLatest { result ->
+                _faults.value = result
 
-    private val _allFaults = mutableStateOf(
-        listOf(
-            Fault("F001", "Awaria pompy","Pompa przestała działać", "Hala A, P1", "Hala A", "krytyczna", "zgłoszone", null),
-            Fault("F002", "Drobny wyciek","Wyciek wody", "Sekcja B, T5", "Hala A", "normalna", "zgłoszone", "uid_technik_1"),
-            Fault("F003", "Problem z HMI","Panel HMI nie reaguje", "Hala A, C3", "Hala A", "wysoki", "zgłoszone", null),
-            Fault("F004", "Konserwacja","Konserwacja urządzenia", "Sekcja B, M4", "Sekcja B", "zakończone", "zakończone", "uid_technik_2")
-        )
-    )
-    val allFaults: State<List<Fault>> = _allFaults
+               val uniqueUids = result.mapNotNull { it.assignedToUid }.toSet()
+                fetchUsernames(uniqueUids)
+            }
+        }
+    }
+
+    fun fetchUsernames(uids: Set<String>){
+        viewModelScope.launch {
+            val usernameMap = mutableMapOf<String, String>()
+            uids.forEach { uid ->
+                val username = service.getUsernameByUid(uid)
+                usernameMap[uid] = username
+            }
+            _usernames.value = usernameMap
+        }
+    }
+
+    fun getUsername(uid: String) : String{
+        return _usernames.value[uid] ?: "Ładowanie..."
+    }
+
+    //usterki filtrowane są teraz w FireBase
+    fun filterFaults(): List<Fault> {
+        return _faults.value
+        /*val activeFaults = _faults.value //aktualna lista
+
+        return when (role){
+
+            //operator widzi wszystkie usterki
+            UserRoles.OPERATOR -> {
+                activeFaults
+            }
+
+            //kierownik widzi wszystkie usterki swojego wydzialu
+            UserRoles.MANAGER -> {
+                activeFaults.filter { it.department == department }
+            }
+
+            //technik widzi swoje usterki
+            UserRoles.TECHNICIAN -> {
+                activeFaults.filter { it.assignedTo == currentUserUID }
+            }
+
+            //inna rola zwraca pusta liste
+            else -> emptyList()
+
+        }*/
+
+    }
 
 }
