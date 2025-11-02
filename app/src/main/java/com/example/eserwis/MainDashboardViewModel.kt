@@ -18,7 +18,11 @@ class MainDashboardViewModel(
 
     private val _faults = MutableStateFlow<List<Fault>>(emptyList())
     val faults: StateFlow<List<Fault>> = _faults.asStateFlow()
-    private val _usernames = MutableStateFlow<Map<String, String>>(emptyMap())
+
+    suspend fun getUsername(uid: String) : String {
+        return service.getUsernameByUid(uid)
+    }
+
     fun loadFaults(
         role: String,
         currentUserUID: String,
@@ -30,26 +34,13 @@ class MainDashboardViewModel(
             service.getActiveFaults(role, currentUserUID, department).collectLatest { result ->
                 _faults.value = result
 
-               val uniqueUids = result.mapNotNull { it.assignedToUid }.toSet()
-                fetchUsernames(uniqueUids)
             }
         }
     }
 
-    fun fetchUsernames(uids: Set<String>){
-        viewModelScope.launch {
-            val usernameMap = mutableMapOf<String, String>()
-            uids.forEach { uid ->
-                val username = service.getUsernameByUid(uid)
-                usernameMap[uid] = username
-            }
-            _usernames.value = usernameMap
-        }
-    }
 
-    fun getUsername(uid: String) : String{
-        return _usernames.value[uid] ?: "Ładowanie..."
-    }
+
+
 
     //usterki filtrowane są teraz w FireBase
     fun filterFaults(): List<Fault> {

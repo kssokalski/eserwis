@@ -15,6 +15,15 @@ class FaultService {
     private val _db = FirebaseFirestore.getInstance()
     private val faultsCollection = _db.collection("faults")
 
+    suspend fun getUsernameByUid(uid: String) : String {
+        return try {
+            val document = _db.collection("users").document(uid).get().await()
+            document.getString("username") ?: "Nieznany użytkownik"
+        } catch (e : Exception) {
+            "Błąd ładowania"
+        }
+    }
+
     fun getActiveFaults(
         role: String,
         currentUserUID: String,
@@ -55,13 +64,4 @@ class FaultService {
         awaitClose { subscription.remove() }
     }
 
-    suspend fun getUsernameByUid(uid: String) : String{
-        return try {
-            val document = _db.collection("users").document(uid).get().await()
-            //jesli nie ma username, to pobierz uid
-            document.getString("username") ?: uid
-        } catch (e: Exception){
-            "Błąd pobierania nazwy użytkownika"
-        }
-    }
 }

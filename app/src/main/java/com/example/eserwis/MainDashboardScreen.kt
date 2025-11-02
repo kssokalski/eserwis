@@ -26,7 +26,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -112,12 +114,12 @@ fun FaultListItem(
     viewModel: MainDashboardViewModel = viewModel()
 ){
 
-    //pobranie username dla danej usterki
-    val username by remember(fault.assignedToUid) {
-        derivedStateOf {
-            if (fault.assignedToUid != null){
-                viewModel.getUsername(fault.assignedToUid)
-            } else null
+    var username by remember(fault.assignedToUid) { mutableStateOf<String?>(null) }
+
+    //pobranie username po pojawieniu sie komponentu
+    LaunchedEffect(fault.assignedToUid) {
+        if (fault.assignedToUid != null){
+            username = viewModel.getUsername(fault.assignedToUid)
         }
     }
 
@@ -140,7 +142,7 @@ fun FaultListItem(
                 Text(text = "Status : ${fault.status}", style = MaterialTheme.typography.bodySmall)
                 /* TODO: FIX $USERNAME */
                 if(fault.assignedToUid != null && userRole == UserRoles.MANAGER) {
-                    Text(text = "Przypisane do : $username", style = MaterialTheme.typography.bodySmall)
+                    Text(text = "Przypisane do : ${username ?: "Nie przypisano"}", style = MaterialTheme.typography.bodySmall)
                 }
             }
 
