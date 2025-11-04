@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.eserwis.ui.theme.EserwisTheme
 
+
+
 @Composable
 fun LoginScreen(
    onLoginSuccess: (AuthenticatedUser) -> Unit,
@@ -20,11 +22,10 @@ fun LoginScreen(
 ) {
    val state = viewModel.state.value
 
-   LaunchedEffect(key1 = state.loginSuccess) {
-      if (state.loginSuccess) {
-         state.authenticatedUser?.let { user ->
-            onLoginSuccess(user) //przekazanie danych uzytkownika
-         }
+   LaunchedEffect(state.loginSuccess) {
+      if(state.loginSuccess && state.authenticatedUser != null) {
+         UserManager.setCurrentUser(state.authenticatedUser)
+         onLoginSuccess(state.authenticatedUser)
       }
    }
 
@@ -74,7 +75,7 @@ fun LoginScreen(
          // przycisk logowania
          Button(
             onClick = viewModel::login,
-            enabled = !state.isLoading, // Wyłączony, gdy trwa ładowanie
+            enabled = !state.isLoading, // Wylaczony jak trwa ładowanie
             modifier = Modifier
                .fillMaxWidth()
                .height(50.dp)

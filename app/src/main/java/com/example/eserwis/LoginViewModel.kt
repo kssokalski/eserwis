@@ -18,12 +18,6 @@ data class LoginState(
     val authenticatedUser: AuthenticatedUser? = null
 )
 
-data class AuthenticatedUser(
-    val uid : String,
-    val role: String,
-    val department: String? = null
-)
-
 class LoginViewModel(
     private val authService: AuthService = AuthService()
 ) : ViewModel() {

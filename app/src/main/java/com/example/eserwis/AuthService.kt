@@ -16,7 +16,7 @@ class AuthService {
         data class Error (val message: String) : AuthResult()
     }
 
-    suspend fun login(username: String, password: String): Any {
+    suspend fun login(username: String, password: String): AuthResult {
         return try {
             val result = _auth.signInWithEmailAndPassword(username, password).await()
             val uid = result.user?.uid ?: return AuthResult.Error("Brak UID użytkownika")

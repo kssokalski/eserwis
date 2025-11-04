@@ -44,6 +44,7 @@ fun MainDashboardScreen(
     currentUserUID: String,
     department: String,
     onLogout: () -> Unit,
+    onFaultClick : (String) -> Unit,
     viewModel: MainDashboardViewModel = viewModel()
 ) {
 
@@ -94,7 +95,7 @@ fun MainDashboardScreen(
                 items(
                     items = allFaults
                 ) { fault ->
-                    FaultListItem(fault, userRole, currentUserUID)
+                    FaultListItem(fault, userRole, currentUserUID, onFaultClick = onFaultClick)
                     HorizontalDivider(modifier = Modifier.fillMaxWidth(), thickness = 1.dp)
                 }
             }
@@ -111,6 +112,7 @@ fun FaultListItem(
     fault: Fault,
     userRole: String,
     currentUserUID: String,
+    onFaultClick: (String) -> Unit,
     viewModel: MainDashboardViewModel = viewModel()
 ){
 
@@ -127,7 +129,7 @@ fun FaultListItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        onClick = { /*TODO: przejscie do szczegolow usterki*/ }
+        onClick = { onFaultClick(fault.id) }
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -176,6 +178,6 @@ fun FaultListItem(
 @Composable
 fun MainDashboardScreenPreview() {
     EserwisTheme {
-        MainDashboardScreen("technik", "uid_technik_1", "Hala A", onLogout = {})
+        MainDashboardScreen("technik", "uid_technik_1", "Hala A", onLogout = {}, onFaultClick = {})
     }
 }

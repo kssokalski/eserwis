@@ -24,6 +24,16 @@ class FaultService {
         }
     }
 
+    suspend fun getFaultById(faultId : String): Fault?{
+        return try {
+            val document = faultsCollection.document(faultId).get().await()
+            document.toObject(Fault::class.java)
+        } catch (e : Exception) {
+            null
+        }
+    }
+
+
     fun getActiveFaults(
         role: String,
         currentUserUID: String,
