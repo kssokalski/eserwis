@@ -6,5 +6,5 @@ sealed class Screen(val route :String){
     object FaultDetails : Screen("faultDetails/{faultId}"){
         fun createRoute(faultId : String) = "faultDetails/$faultId"
     }
-    object reportFault : Screen("reportFault")
+    object ReportFault : Screen("reportFault")
 }

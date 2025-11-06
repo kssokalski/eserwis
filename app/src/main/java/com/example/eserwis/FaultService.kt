@@ -15,6 +15,15 @@ class FaultService {
     private val _db = FirebaseFirestore.getInstance()
     private val faultsCollection = _db.collection("faults")
 
+    suspend fun addFault(fault: Fault) : Boolean {
+        return try {
+            faultsCollection.add(fault).await()
+            true
+        } catch (e : Exception) {
+            false
+        }
+    }
+
     suspend fun getUsernameByUid(uid: String) : String {
         return try {
             val document = _db.collection("users").document(uid).get().await()

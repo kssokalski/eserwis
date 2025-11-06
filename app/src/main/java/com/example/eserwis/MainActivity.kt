@@ -88,9 +88,9 @@ fun AppNavigation() {
                     onFaultClick = { faultId ->
                         navController.navigate(Screen.FaultDetails.createRoute(faultId))
                     },
-                    /*onReportFault = {
+                    onReportFault = {
                         navController.navigate(Screen.ReportFault.route)
-                    }*/
+                    }
                 )
             } else {
                 navController.navigate(Screen.Login.route) {
@@ -117,15 +117,21 @@ fun AppNavigation() {
             }
         }
 
-        /*composable(Screen.ReportFault.route) {
+        composable(Screen.ReportFault.route) {
             val currentUser = remember { UserManager.getCurrentUser() }
             if(currentUser != null){
                 ReportFaultScreen(
+                    userRole = currentUser.role,
+                    currentUserUid = currentUser.uid,
+                    department = currentUser.department,
                     onBack = {
+                        navController.popBackStack()
+                    },
+                    onFaultReported = {
                         navController.popBackStack()
                     }
                 )
             }
-        }*/
+        }
     }
 }

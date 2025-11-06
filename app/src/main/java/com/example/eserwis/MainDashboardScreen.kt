@@ -24,14 +24,12 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,6 +43,7 @@ fun MainDashboardScreen(
     department: String,
     onLogout: () -> Unit,
     onFaultClick : (String) -> Unit,
+    onReportFault : () -> Unit,
     viewModel: MainDashboardViewModel = viewModel()
 ) {
 
@@ -74,7 +73,7 @@ fun MainDashboardScreen(
         ) {
             if(userRole == UserRoles.MANAGER || userRole == UserRoles.OPERATOR) {
                 Button(
-                    onClick = { /*TODO: przejscie do zglaszania usterek*/ },
+                    onClick = onReportFault,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp)
@@ -142,7 +141,6 @@ fun FaultListItem(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Lokalizacja : ${fault.location}", style = MaterialTheme.typography.bodySmall)
                 Text(text = "Status : ${fault.status}", style = MaterialTheme.typography.bodySmall)
-                /* TODO: FIX $USERNAME */
                 if(fault.assignedToUid != null && userRole == UserRoles.MANAGER) {
                     Text(text = "Przypisane do : ${username ?: "Nie przypisano"}", style = MaterialTheme.typography.bodySmall)
                 }
@@ -178,6 +176,6 @@ fun FaultListItem(
 @Composable
 fun MainDashboardScreenPreview() {
     EserwisTheme {
-        MainDashboardScreen("technik", "uid_technik_1", "Hala A", onLogout = {}, onFaultClick = {})
+        MainDashboardScreen("technik", "uid_technik_1", "Hala A", onLogout = {}, onFaultClick = {}, onReportFault = {})
     }
 }
