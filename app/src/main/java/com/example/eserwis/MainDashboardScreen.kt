@@ -116,6 +116,7 @@ fun FaultListItem(
 ){
 
     var username by remember(fault.assignedToUid) { mutableStateOf<String?>(null) }
+    var showStatusDialog by remember { mutableStateOf(false) }
 
     //pobranie username po pojawieniu sie komponentu
     LaunchedEffect(fault.assignedToUid) {
@@ -151,7 +152,7 @@ fun FaultListItem(
                     Text(text = "Przypisz")
                 }
             } else if (fault.assignedToUid == currentUserUID) {
-                Button(onClick = { /*TODO: zmiana statusu usterki*/ }) {
+                Button(onClick = { showStatusDialog = true }) {
                     Text(text = "Zmień status")
                 }
             } else {
@@ -167,6 +168,17 @@ fun FaultListItem(
 
 
         }
+    }
+
+    if (showStatusDialog) {
+        ChangeStatusDialog(
+            fault = fault,
+            onDismiss = { showStatusDialog = false },
+            onStatusChange = { newStatus ->
+                viewModel.changeFaultStatus(fault.id, newStatus)
+                showStatusDialog = false
+            }
+        )
     }
 }
 

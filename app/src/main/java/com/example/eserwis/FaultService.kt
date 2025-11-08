@@ -15,6 +15,17 @@ class FaultService {
     private val _db = FirebaseFirestore.getInstance()
     private val faultsCollection = _db.collection("faults")
 
+    suspend fun updateFaultStatus(faultId: String, status: String) : Boolean {
+        return try {
+            faultsCollection.document(faultId).update("status", status).await()
+            true
+        } catch (e : Exception) {
+            println("DEBUG: ERROR: ${e.message}")
+            false
+        }
+
+    }
+
     suspend fun addFault(fault: Fault) : Boolean {
         return try {
             faultsCollection.add(fault).await()

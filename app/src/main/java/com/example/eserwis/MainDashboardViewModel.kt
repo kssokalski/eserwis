@@ -23,11 +23,33 @@ class MainDashboardViewModel(
         return service.getUsernameByUid(uid)
     }
 
+    var currentRole = ""
+    var currentUserUid = ""
+    var currentDepartment : String? = null
+
+    fun changeFaultStatus(faultId: String, status: String) {
+        viewModelScope.launch {
+            try{
+                val success = service.updateFaultStatus(faultId, status)
+                if(success){
+                    loadFaults(currentRole, currentUserUid, currentDepartment)
+                } else {
+                    println("DEBUG : Failed to update fault status")
+                }
+            } catch (e: Exception){
+                println("DEBUG : ERROR: ${e.message}")
+            }
+        }
+    }
+
     fun loadFaults(
         role: String,
         currentUserUID: String,
         department: String?
     ) {
+        this.currentRole = role
+        this.currentUserUid = currentUserUID
+        this.currentDepartment = department
         viewModelScope.launch {
             //val currentUser = FirebaseAuth.getInstance().currentUser
 
