@@ -15,6 +15,39 @@ class FaultService {
     private val _db = FirebaseFirestore.getInstance()
     private val faultsCollection = _db.collection("faults")
 
+
+    suspend fun assignFault(faultId: String, technicianUid: String) : Boolean {
+        return try {
+            faultsCollection.document(faultId)
+                .update("assignedToUid", technicianUid)
+                .await()
+            true
+        } catch (e : Exception) {
+            println("DEBUG: ERROR ASSIGNING A FAULT: ${e.message}")
+            false
+        }
+    }
+
+    suspend fun getTechniciansByDepartment(department: String) : List<User> {
+        return try{
+            val query = _db.collection("users")
+                .whereEqualTo("role", "serwisant")
+                .whereEqualTo("department", department)
+                .get().await()
+
+            query.documents.map { document ->
+                User(
+                    uid = document.id,
+                    username = document.getString("username") ?: "serwisant",
+                    role = document.getString("role") ?: "serwisant",
+                    department = document.getString("department") ?: "",
+                )
+            }
+        } catch (e : Exception) {
+            emptyList()
+        }
+    }
+
     suspend fun updateFaultStatus(faultId: String, status: String) : Boolean {
         return try {
             faultsCollection.document(faultId).update("status", status).await()

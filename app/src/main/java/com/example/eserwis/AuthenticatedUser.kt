@@ -7,6 +7,14 @@ data class AuthenticatedUser(
     val department: String
 )
 
+data class User(
+    val uid: String,
+    val username : String,
+    val role: String,
+    val department: String?,
+)
+
+
 //obsluga stanu uzytkownika
 object UserManager {
     private var currentUser: AuthenticatedUser? = null

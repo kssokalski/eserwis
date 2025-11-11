@@ -23,7 +23,7 @@ class AuthService {
             //pobranie danych z Firestore
             val userDoc = _db.collection("users").document(uid).get().await()
             val role = userDoc.getString("role") ?: return AuthResult.Error("Brak roli użytkownika")
-            val department = userDoc.getString("department") ?: return AuthResult.Error("Brak działu użytkownika")
+            val department = userDoc.getString("department") ?: ""
             val authenticatedUser = AuthenticatedUser(
                 uid = uid,
                 role = role,

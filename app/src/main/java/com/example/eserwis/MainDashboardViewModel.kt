@@ -19,6 +19,35 @@ class MainDashboardViewModel(
     private val _faults = MutableStateFlow<List<Fault>>(emptyList())
     val faults: StateFlow<List<Fault>> = _faults.asStateFlow()
 
+    private var _technicians = MutableStateFlow<List<User>>(emptyList())
+    val technicians: StateFlow<List<User>> = _technicians.asStateFlow()
+
+    fun assignFault(faultId: String, technicianId: String) {
+        viewModelScope.launch {
+            try {
+                val success = service.assignFault(faultId, technicianId)
+                if (success) {
+                    loadFaults(currentRole, currentUserUid, currentDepartment)
+                } else {
+                    println("DEBUG : Failed to assign fault")
+                }
+            } catch (e: Exception) {
+                println("DEBUG : ERROR: ${e.message}")
+            }
+        }
+    }
+
+    fun loadTechnicians(department: String) {
+        viewModelScope.launch {
+            try{
+                val techniciansFromDepartment = service.getTechniciansByDepartment(department)
+                _technicians.value = techniciansFromDepartment
+            } catch (e: Exception){
+                println("DEBUG : ERROR LOADING TECHNICIANS: ${e.message}")
+            }
+        }
+    }
+
     suspend fun getUsername(uid: String) : String {
         return service.getUsernameByUid(uid)
     }

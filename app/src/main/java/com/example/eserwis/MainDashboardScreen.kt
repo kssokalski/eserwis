@@ -94,7 +94,7 @@ fun MainDashboardScreen(
                 items(
                     items = allFaults
                 ) { fault ->
-                    FaultListItem(fault, userRole, currentUserUID, onFaultClick = onFaultClick)
+                    FaultListItem(fault, userRole, currentUserUID, department, onFaultClick = onFaultClick)
                     HorizontalDivider(modifier = Modifier.fillMaxWidth(), thickness = 1.dp)
                 }
             }
@@ -111,12 +111,14 @@ fun FaultListItem(
     fault: Fault,
     userRole: String,
     currentUserUID: String,
+    department: String? = null,
     onFaultClick: (String) -> Unit,
     viewModel: MainDashboardViewModel = viewModel()
 ){
 
     var username by remember(fault.assignedToUid) { mutableStateOf<String?>(null) }
     var showStatusDialog by remember { mutableStateOf(false) }
+    var showAssignDialog by remember { mutableStateOf(false) }
 
     //pobranie username po pojawieniu sie komponentu
     LaunchedEffect(fault.assignedToUid) {
@@ -147,8 +149,8 @@ fun FaultListItem(
                 }
             }
 
-            if(userRole == UserRoles.MANAGER && fault.status == "zgłoszone") {
-                Button(onClick = { /*TODO: przypisanie do usterki*/ }) {
+            if(userRole == UserRoles.MANAGER && fault.status == "zgłoszone" && fault.assignedToUid == null) {
+                Button(onClick = {showAssignDialog = true }) {
                     Text(text = "Przypisz")
                 }
             } else if (fault.assignedToUid == currentUserUID) {
@@ -177,6 +179,17 @@ fun FaultListItem(
             onStatusChange = { newStatus ->
                 viewModel.changeFaultStatus(fault.id, newStatus)
                 showStatusDialog = false
+            }
+        )
+    }
+
+    if (showAssignDialog) {
+        AssignTechnicianDialog(
+            fault = fault,
+            department = department?: "",
+            onDismiss = { showAssignDialog = false },
+            onTechnicianAssigned = { technicianId ->
+                viewModel.assignFault(fault.id, technicianId)
             }
         )
     }
