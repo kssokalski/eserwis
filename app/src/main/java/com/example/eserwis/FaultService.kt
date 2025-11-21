@@ -16,6 +16,36 @@ class FaultService {
     private val faultsCollection = _db.collection("faults")
 
 
+    suspend fun getUserDepartment(userUid : String) : String? {
+        return try {
+            val userDoc = _db.collection("users").document(userUid).get().await()
+            userDoc.getString("department")
+        } catch (e : Exception) {
+            println("DEBUG: ERROR: ${e.message}")
+            null
+        }
+    }
+
+    suspend fun updateFault(faultId: String, fault: Fault) : Boolean {
+        return try {
+            val faultData = mapOf(
+                "title" to fault.title,
+                "description" to fault.description,
+                "location" to fault.location,
+                "department" to fault.department,
+                "status" to fault.status,
+                "priority" to fault.priority,
+                "assignedToUid" to fault.assignedToUid,
+                "reportedByUid" to fault.reportedByUid
+            )
+            faultsCollection.document(faultId).update(faultData).await()
+            true
+        } catch (e : Exception) {
+            //println("DEBUG: ERROR: ${e.message}")
+            false
+        }
+    }
+
     suspend fun assignFault(faultId: String, technicianUid: String) : Boolean {
         return try {
             faultsCollection.document(faultId)
@@ -23,7 +53,7 @@ class FaultService {
                 .await()
             true
         } catch (e : Exception) {
-            println("DEBUG: ERROR ASSIGNING A FAULT: ${e.message}")
+            //println("DEBUG: ERROR ASSIGNING A FAULT: ${e.message}")
             false
         }
     }

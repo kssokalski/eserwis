@@ -22,6 +22,8 @@ class MainDashboardViewModel(
     private var _technicians = MutableStateFlow<List<User>>(emptyList())
     val technicians: StateFlow<List<User>> = _technicians.asStateFlow()
 
+
+
     fun assignFault(faultId: String, technicianId: String) {
         viewModelScope.launch {
             try {
@@ -66,7 +68,7 @@ class MainDashboardViewModel(
                     println("DEBUG : Failed to update fault status")
                 }
             } catch (e: Exception){
-                println("DEBUG : ERROR: ${e.message}")
+                println("DEBUG : ERROR in changeFaultStatus: ${e.message}")
             }
         }
     }

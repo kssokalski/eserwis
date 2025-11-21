@@ -98,11 +98,11 @@ class ReportFaultViewModel(
                     timestamp = System.currentTimeMillis(),
                     eta = null
                 )
-                println("DEBUG: Creating fault with:")
+                /*println("DEBUG: Creating fault with:")
                 println("DEBUG: - title: ${fault.title}")
                 println("DEBUG: - status: ${fault.status}")
                 println("DEBUG: - reportedByUid: ${fault.reportedByUid}")
-                println("DEBUG: - currentUserUid: $currentUserUid")
+                println("DEBUG: - currentUserUid: $currentUserUid")*/
 
                 val success = faultService.addFault(fault)
 

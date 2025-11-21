@@ -1,6 +1,5 @@
 package com.example.eserwis
 
-import android.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -48,10 +47,19 @@ fun FaultDetailsScreen(
 
     val fault by viewModel.faultDetails.collectAsState()
     var username by remember { mutableStateOf<String?>(null) }
+    var reportedUsername by remember { mutableStateOf<String?>(null) }
+    var showEditDialog by remember { mutableStateOf(false) }
+
 
     LaunchedEffect(fault?.assignedToUid) {
         if (fault?.assignedToUid != null) {
             username = viewModel.getUsername(fault!!.assignedToUid!!)
+        }
+    }
+
+    LaunchedEffect(fault?.reportedByUid) {
+        if (fault?.reportedByUid != null) {
+            reportedUsername = viewModel.getUsername(fault!!.reportedByUid)
         }
     }
 
@@ -78,7 +86,11 @@ fun FaultDetailsScreen(
             } else {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {/*TODO: Edycja usterki przy odpowiednich uprawnieniach*/}
+                    onClick = {
+                        if (userRole == UserRoles.MANAGER || userRole == UserRoles.OPERATOR) {
+                            showEditDialog = true
+                        }
+                    }
                 ){
                     Column(modifier = Modifier.padding(16.dp)){
                         Text(
@@ -104,11 +116,23 @@ fun FaultDetailsScreen(
                         FaultDetail("Lokalizacja", fault!!.location)
                         FaultDetail("Wydział", fault!!.department)
                         FaultDetail("Status", fault!!.status)
-                        FaultDetail("Zgłoszono przez", fault!!.reportedByUid)
+                        FaultDetail("Zgłoszono przez", /*fault!!.reportedByUid*/reportedUsername ?: "NIEZNANY")
                         FaultDetail("Przypisano do", username ?: "NIEPRZYPISANO")
                     }
                 }
             }
+        }
+        if(showEditDialog && fault != null){
+            EditFaultDialog(
+                fault = fault!!,
+                userRole = userRole,
+                onDismiss = { showEditDialog = false },
+                onFaultUpdated = { updatedFault ->
+                    println("DEBUG: FaultDetailsScreen updated fault priority: ${updatedFault.priority}")
+                    viewModel.updateFault(faultId, updatedFault)
+                    showEditDialog = false
+                }
+            )
         }
     }
 }

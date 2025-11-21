@@ -120,6 +120,7 @@ fun FaultListItem(
     var showStatusDialog by remember { mutableStateOf(false) }
     var showAssignDialog by remember { mutableStateOf(false) }
 
+
     //pobranie username po pojawieniu sie komponentu
     LaunchedEffect(fault.assignedToUid) {
         if (fault.assignedToUid != null){
